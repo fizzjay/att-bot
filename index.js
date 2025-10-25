@@ -358,32 +358,33 @@ connection.subscribe("PlayerStateChanged", async (msg) => {
 
 // === Start ===
 async function start() {
-  await bot.start();
   try {
-    const serverId = 1196821868; // your fixed server ID
+    await bot.start();
+    console.log('✅ ATT bot started');
+
+    const serverId = 1196821868; // fixed server ID
     connection = await bot.openServerConnection(serverId);
-    console.log(`✅ Connected automatically to server ID ${serverId}`);
-    connection.send(`player message * online! 30`)
+    console.log(`✅ Connected to ATT server ID ${serverId}`);
+
+    await connection.send(`player message "* online!" 30`);
+    console.log('✅ Online message sent');
+
+    // === Faction Logic ===
+    connection.subscribe("PlayerJoined", async message => {
+      const { user } = message.data;
+      const username = user.username;
+
+      const linkedEntry = Object.values(linkedPlayers).find(p => p.ign.toLowerCase() === username.toLowerCase());
+      if (!linkedEntry || !linkedEntry.faction) return;
+
+      const faction = linkedEntry.faction;
+      console.log(`[FACTION] ${username} joined and belongs to ${faction}`);
+      await connection.send(`player message "${username}" "🏰 Welcome back, warrior of ${faction}!"`);
+      applyFactionBuff(username, faction);
+      startBotLoops();
+    });
+
   } catch (err) {
-    console.error("❌ Failed to connect to server:", err);
-    process.exit(1);
+    console.error("❌ Error starting bot:", err);
   }
-
-  // === Faction Logic ===
-  connection.subscribe("PlayerJoined", async message => {
-    const { user } = message.data;
-    const username = user.username;
-
-    const linkedEntry = Object.values(linkedPlayers).find(p => p.ign.toLowerCase() === username.toLowerCase());
-    if (!linkedEntry || !linkedEntry.faction) return;
-
-    const faction = linkedEntry.faction;
-    console.log(`[FACTION] ${username} joined and belongs to ${faction}`);
-    await connection.send(`player message "${username}" "🏰 Welcome back, warrior of ${faction}!"`);
-    applyFactionBuff(username, faction);
-  });
-
-  startBotLoops();
 }
-
-start();
