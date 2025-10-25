@@ -1,8 +1,9 @@
 // Start Discord bot
 require('./discord.js');
-
-// Start ATT bot
 require('./index.js');
+
+// Keep process alive for ATT bot
+setInterval(() => {}, 1e6);
 
 // Keep the service alive with a tiny HTTP server
 const express = require('express');
